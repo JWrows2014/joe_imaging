@@ -1,7 +1,10 @@
 ---
 title: "Joe Wu's Images"
 author: "joe wu, phd"
-format: revealjs
+format:
+  html: default
+  revealjs:
+    output-file: joe_imaging.html
 editor: visual
 ---
 
