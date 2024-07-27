@@ -1,0 +1,163 @@
+---
+title: "Joe Wu's Images"
+author: "joe wu, phd"
+format: revealjs
+editor: visual
+---
+
+```{python}
+import os
+import pydicom as dicom
+from pydicom.fileset import FileSet
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import pymupdf
+```
+
+```{python}
+os.chdir("/Users/joe.wu/jw_gd1/joe_wu/joe_imaging")
+```
+
+```{python}
+jw_imaging_path="/Users/joe.wu/jw_gd1/joe_wu/joe_imaging"
+```
+
+```{python}
+toc_path=os.path.join(jw_imaging_path,"jw_toc_xrays_20240715/DICOMDIR")
+```
+
+```{python}
+toc_ds=dicom.dcmread(toc_path)
+```
+
+```{python}
+toc_fs=FileSet(toc_ds)
+```
+
+```{python}
+toc_root_path="/Users/joe.wu/jw_gd1/joe_wu/joe_imaging/jw_toc_xrays_20240715"
+```
+
+```{python}
+toc_ids=toc_fs.find_values("ReferencedFileID")
+```
+
+```{python}
+i=0
+toc_image_path=[None]*len(toc_ids)
+for ids_toc in toc_ids:
+  toc_image_path[i]=os.path.join(toc_root_path, *ids_toc)
+  i=i+1
+```
+
+```{python}
+er_path=os.path.join(jw_imaging_path,"jw_knee_xray_20240225/exam/DICOMDIR")
+```
+
+```{python}
+er_ds=dicom.dcmread(er_path)
+```
+
+```{python}
+er_fs=FileSet(er_ds)
+```
+
+```{python}
+er_root_path="/Users/joe.wu/jw_gd1/joe_wu/joe_imaging/jw_knee_xray_20240225/exam"
+```
+
+```{python}
+er_ids=er_fs.find_values("ReferencedFileID")
+```
+
+```{python}
+i=0
+er_image_path=[None]*len(er_ids)
+for ids_er in er_ids:
+  er_image_path[i]=os.path.join(er_root_path, *ids_er)
+  i=i+1
+```
+
+```{python}
+for toc_image in toc_image_path:
+  toc_image1=dicom.dcmread(toc_image)
+  if ("StudyDescription" in toc_image1):
+    if ("KNEE" in toc_image1.StudyDescription and "Image Storage" in toc_image1.SOPClassUID.name):
+      toc_knee_pa_bend=toc_image1
+```
+
+```{python}
+for er_image in er_image_path:
+  er_image1=dicom.dcmread(er_image)
+  if ("AP" in er_image1.ProtocolName):
+    er_knee_ap=er_image1
+```
+
+```{python}
+#| output: false
+## Code borrow and adapted from https://pymupdf.readthedocs.io/en/latest/the-basics.html
+coa1 = pymupdf.open("zwu_knee_xray.pdf")
+for page_index in range(len(coa1)): 
+    page = coa1[page_index]
+    image_list = page.get_images()
+    if image_list:
+        print(f"Found {len(image_list)} images on page {page_index}")
+    else:
+        print("No images found on page", page_index)
+    for image_index, img in enumerate(image_list, start=1):
+        xref = img[0]
+        pix = pymupdf.Pixmap(coa1, xref)
+        if pix.n - pix.alpha > 3:
+            pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
+        pix.save("./coa1/page_%s-image_%s.png" % (page_index, image_index))
+        pix = None
+```
+
+```{python}
+#| output: false
+## Code borrow and adapted from https://pymupdf.readthedocs.io/en/latest/the-basics.html
+coa2 = pymupdf.open("zwu_shoulder_xray.pdf")
+for page_index in range(len(coa2)): 
+    page = coa2[page_index]
+    image_list = page.get_images()
+    if image_list:
+        print(f"Found {len(image_list)} images on page {page_index}")
+    else:
+        print("No images found on page", page_index)
+    for image_index, img in enumerate(image_list, start=1):
+        xref = img[0]
+        pix = pymupdf.Pixmap(coa2, xref)
+        if pix.n - pix.alpha > 3:
+            pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
+        pix.save("./coa2/page_%s-image_%s.png" % (page_index, image_index))
+        pix = None
+```
+
+## Knee x-rays AP
+
+```{python}
+fig, (left_ap_supine, left_ap_wb, right_ap_wb)=plt.subplots(1,3)
+left_ap_supine.imshow(er_knee_ap.pixel_array, cmap=plt.cm.gray)
+left_ap_supine.set_title("Left AP supine:\n Suburban: 02-25-2024")
+left_ap_supine.axis("off")
+left_ap_wb.imshow(mpimg.imread("./coa1/page_0-image_1.png"))
+left_ap_wb.set_title("Left AP standing:\n COA: 04-25-2024")
+left_ap_wb.axis("off")
+right_ap_wb.imshow(mpimg.imread("./coa2/page_5-image_1.png"))
+right_ap_wb.set_title("Right AP standing:\n COA: 02-29-2024")
+right_ap_wb.axis("off")
+plt.show()
+```
+
+## Left knee x-rays PA
+
+```{python}
+fig, (pa_wb_bend_toc, pa_wb_bend_coa)=plt.subplots(1,2)
+pa_wb_bend_toc.imshow(toc_knee_pa_bend.pixel_array,cmap=plt.cm.gray)
+pa_wb_bend_toc.set_title("Standing PA with bend:\n TOC: 07-08-2024")
+pa_wb_bend_toc.axis("off")
+pa_wb_bend_coa.imshow(mpimg.imread("./coa1/page_2-image_1.png"))
+pa_wb_bend_coa.set_title("Standing PA with bend:\n COA: 04-25-2024")
+pa_wb_bend_coa.axis("off")
+plt.show()
+```
