@@ -176,6 +176,8 @@ rk_sunrise.axis("off")
 plt.show()
 ```
 
+## Knee x-rays: oblique and lateral
+
 ```{python}
 fig, (lob, lat, rat)=plt.subplots(1,3)
 er_knee_1=dicom.dcmread(er_image_path[1])
