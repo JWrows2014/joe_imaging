@@ -1,10 +1,7 @@
 ---
 title: "Joe Wu's Images"
 author: "joe wu, phd"
-format:
-  html: default
-  revealjs:
-    output-file: joe_imaging.html
+format: beamer
 editor: visual
 ---
 
@@ -15,6 +12,7 @@ from pydicom.fileset import FileSet
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import pymupdf
+import numpy
 ```
 
 ```{python}
@@ -162,5 +160,122 @@ pa_wb_bend_toc.axis("off")
 pa_wb_bend_coa.imshow(mpimg.imread("./coa1/page_2-image_1.png"))
 pa_wb_bend_coa.set_title("Standing PA with bend:\n COA: 04-25-2024")
 pa_wb_bend_coa.axis("off")
+plt.show()
+```
+
+## Knee sunrise
+
+```{python}
+fig, (lk_sunrise,rk_sunrise)=plt.subplots(1,2)
+lk_sunrise.imshow(mpimg.imread("./coa1/page_3-image_1.png"))
+lk_sunrise.axis("off")
+lk_sunrise.set_title("Left sunrise")
+rk_sunrise.imshow(mpimg.imread("./coa2/page_7-image_1.png"))
+rk_sunrise.set_title("Right sunrise")
+rk_sunrise.axis("off")
+plt.show()
+```
+
+```{python}
+fig, (lob, lat, rat)=plt.subplots(1,3)
+er_knee_1=dicom.dcmread(er_image_path[1])
+lob.imshow(er_knee_1.pixel_array, cmap=plt.cm.gray)
+lob.axis("off")
+lob.set_title("Left oblique")
+er_knee_2=dicom.dcmread(er_image_path[2])
+lat.imshow(er_knee_2.pixel_array, cmap=plt.cm.gray)
+lat.axis("off")
+lat.set_title("Left lateral")
+rat.imshow(mpimg.imread("./coa2/page_6-image_1.png"))
+rat.axis("off")
+rat.set_title("Right lateral")
+plt.show()
+```
+
+```{python}
+rh_image_path=[None]*20
+i=0
+for rh_image in toc_image_path:
+  rh_image1=dicom.dcmread(rh_image)
+  if ("StudyDescription" in rh_image1):
+    if ("HAND 3+V" in rh_image1.StudyDescription and "R" in rh_image1.ImageLaterality and "Image Storage" in rh_image1.SOPClassUID.name):
+      rh_image_path[i]=rh_image
+      i=i+1
+while None in rh_image_path:
+  rh_image_path.remove(None)
+```
+
+```{python}
+lh_image_path=[None]*20
+i=0
+for lh_image in toc_image_path:
+  lh_image1=dicom.dcmread(lh_image)
+  if ("StudyDescription" in lh_image1):
+    if ("HAND 3+V" in lh_image1.StudyDescription and "L" in lh_image1.ImageLaterality and "Image Storage" in lh_image1.SOPClassUID.name):
+      lh_image_path[i]=lh_image
+      i=i+1
+while None in lh_image_path:
+  lh_image_path.remove(None)
+```
+
+```{python}
+rh_image_list=[None]*len(rh_image_path)
+for i in range(0, len(rh_image_path)):
+  rh_image_list[i]=dicom.dcmread(rh_image_path[i])
+```
+
+```{python}
+lh_image_list=[None]*len(lh_image_path)
+for i in range(0, len(lh_image_path)):
+  lh_image_list[i]=dicom.dcmread(lh_image_path[i])
+```
+
+## Right hand x-ray
+
+```{python}
+fig, axs = plt.subplots(nrows=2, ncols=3)
+for current_image, ax in zip(rh_image_list, axs.ravel()):
+  ax.imshow(current_image.pixel_array, cmap=plt.cm.gray)
+  ax.axis("off")
+plt.show()
+```
+
+## Left hand x-ray
+
+```{python}
+fig, axs = plt.subplots(nrows=2, ncols=3)
+for current_image, ax in zip(lh_image_list, axs.ravel()):
+  ax.imshow(current_image.pixel_array, cmap=plt.cm.gray)
+  ax.axis("off")
+plt.show()
+```
+
+## Right shoulder x-ray
+
+```{python}
+fig, (rs1, rs2, rs3)=plt.subplots(1,3)
+rs1.imshow(mpimg.imread("./coa2/page_0-image_1.png"))
+rs1.axis("off")
+rs1.set_title("Right shoulder:\n external")
+rs2.imshow(mpimg.imread("./coa2/page_1-image_1.png"))
+rs2.axis("off")
+rs2.set_title("Right shoulder:\n y-view")
+rs3.imshow(mpimg.imread("./coa2/page_2-image_1.png"))
+rs3.axis("off")
+rs3.set_title("Right shoulder:\n axillary")
+plt.show()
+
+```
+
+## Left shoulder x-ray
+
+```{python}
+fig, (ls1, ls2)=plt.subplots(1,2)
+ls1.imshow(mpimg.imread("./coa2/page_3-image_1.png"))
+ls1.axis("off")
+ls1.set_title("Left shoulder:\n external")
+ls2.imshow(mpimg.imread("./coa2/page_4-image_1.png"))
+ls2.axis("off")
+ls2.set_title("Left shoulder:\n y-view")
 plt.show()
 ```
